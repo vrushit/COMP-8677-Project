@@ -1,0 +1,32 @@
+while True:
+  # Get a packet from the tun interface
+  packet = os.read(tun, 2048)
+  if packet:
+    ipPkt = IP(packet)
+    print("{}:".format(ifname), ipPkt.summary())
+    
+    # Sending Spoof packets through Tunnel Interface
+    #newip = IP(src=’1.2.3.4’, dst=ip.src)
+    #newpkt = newip/ip.payload
+    #Improving the Code to check with the ICMP Sniff and Spoof
+    if ICMP in ipPkt and ipPkt[ICMP].type == 8:
+        print("Original Packet.........")
+        print("Source ip address: ", ipPkt[IP].src)
+        print("Destination ip address :", ipPkt[IP].dst)
+
+        # spoof an icmp echo reply packet
+        # swap srcip and dstip
+        ip = IP(src=ipPkt[IP].dst, dst=ipPkt[IP].src, ihl=ipPkt[IP].ihl)
+        icmp = ICMP(type=0, id=ipPkt[ICMP].id, seq=ipPkt[ICMP].seq)
+        data = ipPkt[Raw].load
+        newpkt = ip/icmp/data
+
+        print("Spoofing Packet")
+        print("Spoof Source ip address : ", newpkt[IP].src)
+        print("Spoof Destination ip address :", newpkt[IP].dst)
+	
+	# Writing BInary Data to the Tunnel Interface 
+        dumpData=b'This is Virtual PrivateNetwork'
+        # os.write(tun, bytes(newpkt))
+        os.write(tun, dumpData)
+

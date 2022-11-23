@@ -1,0 +1,17 @@
+# this is the VPN Server from which the hosts can pass the IP Packets
+
+from scapy.all import *
+
+ipAddress = "0.0.0.0"
+PORT = 8000
+
+#creating Server socket in UDP
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.bind((ipAddress, port))
+
+while True:
+  data, (ip, port) = sock.recvfrom(2048)
+  print("{}:{} --> {}:{}".format(ip, port, ipAddress, PORT))
+  ipPkt = IP(data)
+  print("Server: {} --> {}".format(ipPkt.src, ipPkt.dst))
